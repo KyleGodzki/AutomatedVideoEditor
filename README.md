@@ -1,0 +1,2 @@
+# AutomatedVideoEditor
+Python API project
