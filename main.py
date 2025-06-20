@@ -15,12 +15,9 @@ colors_analyzed = 0
 images_analyzed = 0
 text_analyzed = 0
 
-queued_actions = {
-    "Audio": {},
-    "Color": {},
-    "Images": {},
-    "Text": {}
-}
+queued_actions = {}
+
+final_video_timestamps = []
 
 def main():
     global restarting
@@ -56,20 +53,24 @@ def main():
         "5 - Exit and export video \n")
         switch_modes(editing_mode)
 
-    if queued_actions["Audio"]:
+    if "Audio" in queued_actions:
         video_text = audioDetector.execute(path)
         for audio_key, audio_to_find in queued_actions["Audio"].items():
             for segment in video_text:
                 if audio_to_find in segment["text"].lower():
-                    print(segment)
+                    start = segment["start"]
+                    end = segment["end"]
+                    final_video_timestamps.append((start, end))
+        final_video_timestamps.sort()
+        print(final_video_timestamps)
 
-    if queued_actions["Color"]:
+    if "Color" in queued_actions:
         pass
 
-    if queued_actions["Images"]:
+    if "Images" in queued_actions:
         pass
 
-    if queued_actions["Text"]:
+    if "Text" in queued_actions:
         pass
 
 
@@ -79,20 +80,29 @@ def switch_modes(option):
     global colors_analyzed
     global images_analyzed
     global text_analyzed
+    
     match option:
         case "1":
+            if not "Audio" in queued_actions:
+                queued_actions.update({"Audio": {}})
             audio_analyzed += 1
             audio_script = input("Input the audio you want to find in this video as text: ").lower()
             queued_actions["Audio"][audio_analyzed] = audio_script
         case "2":
+            if not "Color" in queued_actions:
+                queued_actions.update({"Color": {}})
             color_analyzed += 1
             color = input("Input the color you want to find in this video as a hex value: ").lower()
             queued_actions["Color"][color_analyzed] = color
         case "3":
+            if not "Images" in queued_actions:
+                queued_actions.update({"Images": {}})
             images_analyzed += 1
             image = input("Input the image you want to find in this video as a valid image format: ").lower()
             queued_actions["Images"][images_analyzed] = image
         case "4":
+            if not "Text" in queued_actions:
+                queued_actions.update({"Text": {}})
             text_analyzed += 1
             text = input("Input the text you want to find in this video as text: ").lower()
             queued_actions["Text"][text] = text
