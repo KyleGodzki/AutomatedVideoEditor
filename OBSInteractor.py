@@ -55,6 +55,7 @@ def stop_and_get_output(ws):
             print(f"⚠️ Could not rename file: {e}")
     else:
         print("⚠️ Output path invalid or file not found.")
+    return new_path
 
 def execute():
     input("📹 Press Enter to start screen recording...")
@@ -76,7 +77,7 @@ def execute():
             if screen_is_still(prev_frame, curr_frame):
                 if time.time() - last_change_time > STILLNESS_THRESHOLD:
                     print("⏹️ Screen still too long. Stopping recording.")
-                    stop_and_get_output(ws)
+                    final_path = stop_and_get_output(ws)
                     break
             else:
                 last_change_time = time.time()
@@ -85,8 +86,9 @@ def execute():
 
     except KeyboardInterrupt:
         print("❌ Interrupted. Stopping OBS recording.")
-        stop_and_get_output(ws)
+        final_path = stop_and_get_output(ws)
 
     ws.disconnect()
     print("✅ OBS WebSocket disconnected. Done.")
+    return final_path
 
