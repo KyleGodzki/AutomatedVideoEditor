@@ -62,16 +62,12 @@ def detect_color_in_video(video_path, hex_color, min_time_gap=5):
         print(f"{t:.2f}")
 
 # # Example usage
-# if __name__ == "__main__":
-#     # Path to the video file
-#     video_path = r"C:\ProjectAssets - Python\BOTWReveal.mkv"
+def execute():
+    # Path to the video file
+    video_path = r"C:\ProjectAssets - Python\BOTWReveal.mkv"
     
-#     # The hex color you want to detect (e.g., #565658)
-#     hex_color = "#1629AC"  # Adjust this to the desired color
+    # The hex color you want to detect (e.g., #565658)
+    hex_color = "#1629AC"  # Adjust this to the desired color
     
-#     # Detect the color in the video and return timestamps
-#     detect_color_in_video(video_path, hex_color)
-
-class colorDetector:
-    def __init__(self):
-        pass
+    # Detect the color in the video and return timestamps
+    detect_color_in_video(video_path, hex_color)

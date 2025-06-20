@@ -60,13 +60,9 @@ def find_template_in_video(video_path, template_path, threshold=0.8):
 
 ## Example usage
 
-# if __name__ == "__main__":
-#     video_file = r"C:\ProjectAssets - Python\RDR2Trailer.mkv"
-#     template_image = r"C:\ProjectAssets - Python\dutch.png"
-#     match_threshold = 0.5  # Adjust this value as needed
+def execute():
+    video_file = r"C:\ProjectAssets - Python\RDR2Trailer.mkv"
+    template_image = r"C:\ProjectAssets - Python\dutch.png"
+    match_threshold = 0.5  # Adjust this value as needed
 
-#     find_template_in_video(video_file, template_image, threshold=match_threshold)
-
-class imageDetector:
-    def __init__(self):
-        pass
+    find_template_in_video(video_file, template_image, threshold=match_threshold)

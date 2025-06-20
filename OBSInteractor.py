@@ -1,26 +1,34 @@
 import cv2
 import numpy as np
 import time
-from obswebsocket import obsws, requests
+from obswebsocket import obsws, requests, exceptions
 import pyautogui
+import sys
+import os
 
 # OBS WebSocket config
 OBS_HOST = "localhost"
-OBS_PORT = 4455  # Use 4444 for OBS WebSocket v4, 4455 for v5
-OBS_PASSWORD = "Kyle01281274$$"  # Change this to your OBS WebSocket password
+OBS_PORT = 4455
+OBS_PASSWORD = "Kyle01281274$$"
 
 # Detection parameters
-STILLNESS_THRESHOLD = 10       # seconds of still screen before stopping
-PIXEL_DIFF_THRESHOLD = 30000   # how much change counts as "motion"
-FRAME_INTERVAL = 1             # seconds between checks
+STILLNESS_THRESHOLD = 5       # seconds of still screen before stopping
+PIXEL_DIFF_THRESHOLD = 30000  # how much change counts as "motion"
+FRAME_INTERVAL = 1            # seconds between checks
+
+video_name = "Temp"
 
 def connect_obs():
-    ws = obsws(OBS_HOST, OBS_PORT, OBS_PASSWORD)
-    ws.connect()
-    return ws
+    try:
+        ws = obsws(OBS_HOST, OBS_PORT, OBS_PASSWORD)
+        ws.connect()
+        print("✅ Connected to OBS WebSocket")
+        return ws
+    except exceptions.ConnectionFailure as e:
+        print(f"❌ Failed to connect to OBS: {e}")
+        sys.exit()
 
 def capture_screen_cv2():
-    # Capture screen using pyautogui and convert for OpenCV
     screenshot = pyautogui.screenshot()
     frame = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
     return frame
@@ -30,7 +38,25 @@ def screen_is_still(prev_frame, curr_frame):
     non_zero_count = np.count_nonzero(diff)
     return non_zero_count < PIXEL_DIFF_THRESHOLD
 
-def main():
+def stop_and_get_output(ws):
+    stop_response = ws.call(requests.StopRecord())
+    output_path = stop_response.getOutputPath()
+
+    print(f"📁 Original output path: {output_path}")
+    time.sleep(3)
+    if output_path and os.path.exists(output_path):
+        directory = os.path.dirname(output_path)
+        new_path = os.path.join(directory, video_name + ".mkv")
+
+        try:
+            os.rename(output_path, new_path)
+            print(f"✅ Renamed to: {new_path}")
+        except Exception as e:
+            print(f"⚠️ Could not rename file: {e}")
+    else:
+        print("⚠️ Output path invalid or file not found.")
+
+def execute():
     input("📹 Press Enter to start screen recording...")
 
     print("🔌 Connecting to OBS...")
@@ -49,8 +75,8 @@ def main():
 
             if screen_is_still(prev_frame, curr_frame):
                 if time.time() - last_change_time > STILLNESS_THRESHOLD:
-                    print("⏹️ Screen has been still for too long. Stopping recording.")
-                    ws.call(requests.StopRecord())
+                    print("⏹️ Screen still too long. Stopping recording.")
+                    stop_and_get_output(ws)
                     break
             else:
                 last_change_time = time.time()
@@ -59,15 +85,8 @@ def main():
 
     except KeyboardInterrupt:
         print("❌ Interrupted. Stopping OBS recording.")
-        ws.call(requests.StopRecord())
+        stop_and_get_output(ws)
 
     ws.disconnect()
-    print("✅ Done. OBS recording stopped.")
-
-if __name__ == "__main__":
-    main()
-
-class OBSInteractor:
-    def __init__(self):
-        pass
+    print("✅ OBS WebSocket disconnected. Done.")
 
