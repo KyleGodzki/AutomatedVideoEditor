@@ -55,19 +55,9 @@ def detect_color_in_video(video_path, hex_color, min_time_gap=5):
 
     cap.release()
 
-    # Print the total matches and their timestamps
-    print(f"\nTotal matches found: {len(matches)}")
-    print("Timestamps (in seconds):")
-    for t in matches:
-        print(f"{t:.2f}")
+    rounded_matches = [round(num, 2) for num in matches]
+    return rounded_matches
 
-# # Example usage
-def execute():
-    # Path to the video file
-    video_path = r"C:\ProjectAssets - Python\BOTWReveal.mkv"
-    
-    # The hex color you want to detect (e.g., #565658)
-    hex_color = "#1629AC"  # Adjust this to the desired color
-    
-    # Detect the color in the video and return timestamps
-    detect_color_in_video(video_path, hex_color)
+def execute(video_path, hex_color):
+    colors_found = detect_color_in_video(video_path, hex_color)
+    return colors_found

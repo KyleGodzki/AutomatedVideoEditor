@@ -43,7 +43,7 @@ def find_template_in_video(video_path, template_path, threshold=0.8):
         if max_val >= threshold and (timestamp - last_match_time >= 3):
             matches.append(timestamp)
             last_match_time = timestamp
-            print(f"Match found at {timestamp:.2f} seconds (Frame {frame_idx})")
+            print(f"Image found at {timestamp:.2f} seconds (Frame {frame_idx})")
 
         percent = (frame_idx / frame_count) * 100
         if percent >= last_logged_percent + 10:
@@ -53,16 +53,11 @@ def find_template_in_video(video_path, template_path, threshold=0.8):
         frame_idx += 1
 
     cap.release()
-    print(f"\nTotal matches found: {len(matches)}")
-    print("Timestamps (in seconds):")
-    for t in matches:
-        print(f"{t:.2f}")
 
-## Example usage
+    rounded_matches = [round(num, 2) for num in matches]
+    return rounded_matches
 
-def execute():
-    video_file = r"C:\ProjectAssets - Python\RDR2Trailer.mkv"
-    template_image = r"C:\ProjectAssets - Python\dutch.png"
+def execute(video_file, template_image):
     match_threshold = 0.5  # Adjust this value as needed
-
-    find_template_in_video(video_file, template_image, threshold=match_threshold)
+    images_found = find_template_in_video(video_file, template_image, threshold=match_threshold)
+    return images_found

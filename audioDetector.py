@@ -1,6 +1,7 @@
 import whisper
 
 def execute(video):
+    print("Analyzing audio...")
     model = whisper.load_model("base")
     result = model.transcribe(video)
     segments = result.get("segments", [])
