@@ -10,6 +10,7 @@ import re
 
 restarting = True
 running = False
+final_edit = False
 
 audio_analyzed = 0
 colors_analyzed = 0
@@ -24,14 +25,18 @@ start = 1
 end = 0
 final_video_timestamps = [[], []]
 
+change_mode = 1
+
 def main():
     global restarting
     global running
+    global final_edit
     global audio_analyzed
     global colors_analyzed
     global images_analyzed
     global text_analyzed
     global edit_buffers
+    global change_mode
     
     while restarting:
         program_setup = input("Type 1 to start OBS recording of your screen or type 2 to link an already existing video on your computer: ")
@@ -51,13 +56,14 @@ def main():
             restarting = False
 
     while running:
-        editing_mode = input("Choose what you want to edit and/or detect: \n" \
+        editing_mode = input("Choose what you want to detect: \n" \
         "1 - Audio \n" \
         "2 - Color \n" \
         "3 - Images \n" \
         "4 - Text \n" \
         "5 - Exit and export video \n"
-        f"6 - Edit amount of time before/after edits (Currently {edit_buffers} seconds\n")
+        f"6 - Edit amount of time before/after edits (Currently {edit_buffers} seconds)\n"
+        "7 - Switch if you want to keep or delete what you detected (Default: Keep)\n")
         switch_modes(editing_mode)
 
     if "Audio" in queued_actions:
@@ -105,8 +111,18 @@ def main():
                     final_video_timestamps[0].append(start)
                     final_video_timestamps[1].append(end)
 
-    # final_video_timestamps.sort()
-    print(final_video_timestamps)
+
+    final_edit = True
+    print("All final video timestamps have been decided.")
+    final_video_name = input("Please input what you'd like to name the final video (exclude any file extensions): ")
+    while final_edit:
+        final_video_location = input(f"Where should {final_video_name} be saved on your computer? Please give the full path: ")
+        if not os.path.isdir(final_video_location):
+            print("Path not found on computer")
+        else:
+            final_edit = False
+    print("Starting editing process...")
+    ffmpegInitializer.execute(final_video_name, final_video_location, path, final_video_timestamps, change_mode)
 
 
 def switch_modes(option):
@@ -116,6 +132,7 @@ def switch_modes(option):
     global images_analyzed
     global text_analyzed
     global edit_buffers
+    global change_mode
 
     match option:
         case "1":
@@ -155,8 +172,11 @@ def switch_modes(option):
             text = input("Input the text you want to find in this video: ").lower()
             queued_actions["Text"][text] = text
         case "5":
-            print("Editing...")
-            running = False
+            if all(len(inner) == 0 for inner in final_video_timestamps):
+                print("You haven't edited anything yet!")
+            else:
+                print("Analyzing...")
+                running = False
         case "6":
             new_buffers = input("Input the amount of time (as an integer) before and after the located clip that is shown and not deleted. \n" \
             "By default, 3 seconds before and after any given clip are saved. Max is 30 seconds. Set this to 0 to only have detected content in the final video: ")
@@ -168,6 +188,14 @@ def switch_modes(option):
                     edit_buffers = new_buffers
             except ValueError:
                 print("Error: Input is not a valid integer")
+        case "7":
+            change_mode = input("By default, your video will cut out everything besides the things you find with options 1-4. \n" \
+            "Press 1 to have it so this is true. Press 2 to have it so everything detected is deleted and the rest of the video is shown instead: ")
+            if change_mode == "1" or change_mode == "2":
+                print("Preference saved...")
+                change_mode = int(change_mode)
+            else:
+                print("Unknown command")
         case _:
             print("Invalid option")
 
