@@ -172,8 +172,8 @@ def switch_modes(option):
             text = input("Input the text you want to find in this video: ").lower()
             queued_actions["Text"][text] = text
         case "5":
-            if all(len(inner) == 0 for inner in final_video_timestamps):
-                print("You haven't edited anything yet!")
+            if not queued_actions:
+                print("You haven't queued any edits yet!")
             else:
                 print("Analyzing...")
                 running = False
